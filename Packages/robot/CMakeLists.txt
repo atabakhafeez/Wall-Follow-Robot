@@ -7,11 +7,15 @@ find_package(catkin REQUIRED COMPONENTS
   sensor_msgs
 )
 
+find_package( OpenCV REQUIRED)
+
 catkin_package()
 
 ## Build LineDetector
 include_directories(include ${catkin_INCLUDE_DIRS})
 
 add_executable(LineDetector src/LineDetector.cpp)
-target_link_libraries(LineDetector ${catkin_LIBRARIES})
+target_link_libraries ( LineDetector ${OpenCV_LIBRARIES} ${catkin_LIBRARIES} )
+
 add_dependencies(LineDetector robot_generate_messages_cpp)
+
