@@ -14,6 +14,11 @@
 using namespace std;
 using namespace cv;
 
+/**
+* Gets the data from the laser range finder, creates an 
+* image out of it and runs openCV HoughLines on it
+* @param msg Raw data comming from the laser range finder
+*/
 void callback(const sensor_msgs::LaserScan& msg) {
 
     //create image
@@ -41,9 +46,6 @@ void callback(const sensor_msgs::LaserScan& msg) {
         int screenx = (int)((cartesianx + screenwidth/2));
         int screeny = (int)((-cartesiany + screenheight/2));
 
-        /*cout << "srceenx" << screenx << endl;
-        cout << "screeny" << screeny << endl;*/
-
         if (screenx > 0 && screeny > 0) {
             image.at<uchar>(screeny, screenx) = (uchar)0;
         } else {
@@ -51,17 +53,14 @@ void callback(const sensor_msgs::LaserScan& msg) {
             cout << screeny << endl;
         }
 
-        //ROS_INFO("colour val = %u", image.at<uchar>(screeny,screenx));
-        //ROS_INFO("colour val = %u", image.at<uchar>(screeny,screenx));
-
     }
 
-  /*  namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
+    namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
     imshow( "Display window", image );                   // Show our image inside it.
 
-    waitKey(0);*/ 
+    waitKey(0); 
 
-    //cout << "image = "<< endl << " "  << image << endl << endl;
+    cout << "image = "<< endl << " "  << image << endl << endl;
 
     //compute Hough Transform
     cv::Mat dst, cdst;
@@ -71,28 +70,28 @@ void callback(const sensor_msgs::LaserScan& msg) {
     HoughLinesP( dst, lines, 1, CV_PI/180, 100, 30, 10 );
 
     cv::Mat gray;
-    //cvtColor(image, gray, CV_BGR2GRAY);
-    // smooth it, otherwise a lot of false circles may be detected
-    //GaussianBlur( image, gray, Size(9, 9), 2, 2 );
+    cvtColor(image, gray, CV_BGR2GRAY);
+    smooth it, otherwise a lot of false circles may be detected
+    GaussianBlur( image, gray, Size(9, 9), 2, 2 );
     vector<Vec3f> circles;
     HoughCircles(dst, circles, CV_HOUGH_GRADIENT, 1, dst.rows/8, 200, 100 );
 
 
-    /*std::vector<cv::Vec2f> lines;
-    cv::HoughLines(dst, lines, 1, CV_PI/180, 100, 0, 0 );*/
+    std::vector<cv::Vec2f> lines;
+    cv::HoughLines(dst, lines, 1, CV_PI/180, 100, 0, 0 );
 
 
 
     cout << "number of lines = " << lines.size() << endl;
     cout << "number of circles = " << circles.size() << endl;
-    /*for (int i = 0; i < lines.size(); ++i){
-        //cout << (lines.at(i)[0])/100 << endl;
+    for (int i = 0; i < lines.size(); ++i){
+        cout << (lines.at(i)[0])/100 << endl;
         float scaled_distance = (lines.at(i)[0])/100;
         float originalx = scaled_distance * cos(lines.at(i)[1]) - 5;
         float originaly = scaled_distance * sin(lines.at(i)[1]) - 5;
 
         float distance = sqrt(originalx*originalx + originaly*originaly);
-        //cout << "distance = " << distance << endl;
+        cout << "distance = " << distance << endl;
 
         cout << lines.at(i) << endl;
     }
@@ -100,7 +99,7 @@ void callback(const sensor_msgs::LaserScan& msg) {
     for (int i = 0; i < circles.size(); ++i)
     {
         cout << circles.at(i) << endl;
-    }*/
+    }
 
 
 
