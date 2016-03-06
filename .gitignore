@@ -7,3 +7,5 @@
 *.toc
 *.nav
 .idea
+*.pyc
+*.swp
