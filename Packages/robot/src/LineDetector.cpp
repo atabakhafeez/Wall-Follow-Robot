@@ -14,6 +14,7 @@
 using namespace std;
 using namespace cv;
 
+//TODO(atabakhafeez): Check and return correct values for coordinates
 /**
 * Gets the data from the laser range finder, creates an 
 * image out of it and runs openCV HoughLines on it
@@ -22,87 +23,70 @@ using namespace cv;
 void callback(const sensor_msgs::LaserScan& msg) {
 
     //create image
-    int screenwidth = 1000;
-    int screenheight = 1000;
+    int screen_width = 1000;
+    int screen_height = 1000;
     cv::Mat image;
-    image.create(screenwidth, screenheight, CV_8UC1);
-    for(int i=0; i<image.rows; i++){
-        for(int j=0; j<image.cols; j++){
+    image.create(screen_width, screen_height, CV_8UC1);
+    for(int i = 0; i < image.rows; i++){
+        for(int j = 0; j < image.cols; j++){
         image.at<uchar>(i,j) = (uchar)255;
         }
     }
-
-                           
-
+                        
     //convert laser_scan data to image
-    float angle = -2.094395;
+    float base_scan_min_angle = -2.094395;
     for (int i = 0; i < number_of_values; ++i) {
         //calculate cartesian coordinates
-        float cartesianx = (msg.ranges[i] * sin(angle)) * 100;
-        float cartesiany = (msg.ranges[i] * cos(angle)) * 100;
-        angle += 0.005826;
+        float cartesian_x = (msg.ranges[i] * sin(base_scan_min_angle)) * 100;
+        float cartesian_y = (msg.ranges[i] * cos(base_scan_min_angle)) * 100;
+        base_scan_min_angle += 0.005826;
 
         //convert to screen coordinates
-        int screenx = (int)((cartesianx + screenwidth/2));
-        int screeny = (int)((-cartesiany + screenheight/2));
+        int screen_x = (int)((cartesian_x + screen_width/2));
+        int screen_y = (int)((-cartesian_y + screen_height/2));
 
-        if (screenx > 0 && screeny > 0) {
-            image.at<uchar>(screeny, screenx) = (uchar)0;
+        if (screen_x > 0 && screen_y > 0) {
+            image.at<uchar>(screen_y, screen_x) = (uchar)0;
         } else {
-            cout << screenx << endl;
-            cout << screeny << endl;
+            cout << screen_x << endl;
+            cout << screen_y << endl;
         }
-
     }
 
-    namedWindow( "Display window", WINDOW_AUTOSIZE );// Create a window for display.
-    imshow( "Display window", image );                   // Show our image inside it.
-
-    waitKey(0); 
-
-    cout << "image = "<< endl << " "  << image << endl << endl;
+    //TODO(atabakhafeez): Delete code below. Only used for visual help.
+    //namedWindow( "Display window", WINDOW_AUTOSIZE );
+    //imshow( "Display window", image );
+    //waitKey(0); 
 
     //compute Hough Transform
-    cv::Mat dst, cdst;
-    cv::Canny(image, dst, 50, 200, 3);
+    cv::Mat destination;
+    cv::Canny(image, destination, 50, 200, 3);
 
     vector<Vec4i> lines;
-    HoughLinesP( dst, lines, 1, CV_PI/180, 100, 30, 10 );
+    HoughLinesP( destination, lines, 1, CV_PI/180, 100, 30, 10 );
 
-    cv::Mat gray;
-    cvtColor(image, gray, CV_BGR2GRAY);
-    smooth it, otherwise a lot of false circles may be detected
-    GaussianBlur( image, gray, Size(9, 9), 2, 2 );
     vector<Vec3f> circles;
-    HoughCircles(dst, circles, CV_HOUGH_GRADIENT, 1, dst.rows/8, 200, 100 );
-
-
-    std::vector<cv::Vec2f> lines;
-    cv::HoughLines(dst, lines, 1, CV_PI/180, 100, 0, 0 );
-
-
+    HoughCircles(image, circles, CV_HOUGH_GRADIENT, 1, image.rows/4, 200, 10, 0, 200 );
 
     cout << "number of lines = " << lines.size() << endl;
     cout << "number of circles = " << circles.size() << endl;
+
+    //TODO(atabakhfeez): Check if conversions of coordinates to original form are correct
     for (int i = 0; i < lines.size(); ++i){
         cout << (lines.at(i)[0])/100 << endl;
         float scaled_distance = (lines.at(i)[0])/100;
-        float originalx = scaled_distance * cos(lines.at(i)[1]) - 5;
-        float originaly = scaled_distance * sin(lines.at(i)[1]) - 5;
+        float original_x = scaled_distance * cos(lines.at(i)[1]) - 5;
+        float original_y = scaled_distance * sin(lines.at(i)[1]) - 5;
 
-        float distance = sqrt(originalx*originalx + originaly*originaly);
-        cout << "distance = " << distance << endl;
+        float point_distance = sqrt(original_x * original_x + original_y * original_y);
+        cout << "distance = " << point_distance << endl;
 
         cout << lines.at(i) << endl;
     }
 
-    for (int i = 0; i < circles.size(); ++i)
-    {
+    for (int i = 0; i < circles.size(); ++i) {
         cout << circles.at(i) << endl;
     }
-
-
-
 }
 
 int main(int argc, char **argv) {
