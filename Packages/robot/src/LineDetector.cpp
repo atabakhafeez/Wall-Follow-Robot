@@ -63,14 +63,10 @@ void callback(const sensor_msgs::LaserScan& msg) {
     cv::Canny(image, destination, 50, 200, 3);
 
     vector<Vec4i> lines;
-    HoughLinesP( destination, lines, 1, CV_PI/180, 100, 30, 10 );
-
-    vector<Vec3f> circles;
-    HoughCircles(image, circles, CV_HOUGH_GRADIENT, 1, image.rows/4, 200, 10, 0, 200 );
+    HoughLinesP(destination, lines, 1, CV_PI/180, 100, 30, 10);
 
     cout << "number of lines = " << lines.size() << endl;
-    cout << "number of circles = " << circles.size() << endl;
-
+    
     //TODO(atabakhfeez): Check if conversions of coordinates to original form are correct
     for (int i = 0; i < lines.size(); ++i){
         cout << (lines.at(i)[0])/100 << endl;
@@ -84,9 +80,6 @@ void callback(const sensor_msgs::LaserScan& msg) {
         cout << lines.at(i) << endl;
     }
 
-    for (int i = 0; i < circles.size(); ++i) {
-        cout << circles.at(i) << endl;
-    }
 }
 
 int main(int argc, char **argv) {
